@@ -160,5 +160,5 @@ class OptimzedNet(nn.Module):
 
 
 if __name__ == "__main__":
-    model = OptimzedNet(upscale_factor=3)
+    model = OptimzedNet(upscale_factor=2)
     print(model)

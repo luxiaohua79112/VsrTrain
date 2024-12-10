@@ -7,20 +7,37 @@ import numpy as np
 from torchvision import transforms
 
 class OptimzedNet(nn.Module):
+    scale_factor_ = 4
+
     def __init__(self, upscale_factor):
         super(OptimzedNet, self).__init__()
+        scale_factor_ = upscale_factor
 
-        # 输入1个通道，输出36通道，5*5卷积核大小，移动步长1像素，边缘填充2像素
-        self.conv1 = nn.Conv2d(1, 36, (5, 5), (1, 1), (2, 2))
+        if (upscale_factor == 4):
+            # 输入1个通道，输出35通道，5*5卷积核大小，移动步长1像素，边缘填充2像素
+            self.conv1 = nn.Conv2d(1, 35, (5, 5), (1, 1), (2, 2))
 
-        # 输入36个通道，输出18通道，3*3卷积核大小，移动步长1像素，边缘填充1像素，卷积膨胀1像素，分6个组
-        self.conv2 = nn.Conv2d(36, 18, (3, 3), (1, 1), (1, 1), 1, 6)
+            # 输入35个通道，输出20通道，3*3卷积核大小，移动步长1像素，边缘填充1像素，卷积膨胀1像素，分5个组
+            self.conv2 = nn.Conv2d(35, 20, (3, 3), (1, 1), (1, 1), 1, 5)
 
-        # 输入18个通道，输出r^2个通道(放大3倍是9通道)，3*3卷积核大小，移动步长1像素，边缘填充1像素, 卷积膨胀1像素，分3个组
-        self.conv3 = nn.Conv2d(18, 1 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1), 1, 3)
+            # 输入20个通道，输出r^2个通道(放大4倍是16通道)，3*3卷积核大小，移动步长1像素，边缘填充1像素, 卷积膨胀1像素，分4个组
+            self.conv3 = nn.Conv2d(20, 1 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1), 1, 4)
 
-        # 最后通过亚像素卷积操作
-        self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
+            # 最后通过亚像素卷积操作
+            self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
+
+        else:
+            # 输入1个通道，输出36通道，5*5卷积核大小，移动步长1像素，边缘填充2像素
+            self.conv1 = nn.Conv2d(1, 36, (5, 5), (1, 1), (2, 2))
+
+            # 输入36个通道，输出18通道，3*3卷积核大小，移动步长1像素，边缘填充1像素，卷积膨胀1像素，分6个组
+            self.conv2 = nn.Conv2d(36, 18, (3, 3), (1, 1), (1, 1), 1, 6)
+
+            # 输入18个通道，输出r^2个通道(放大3倍是9通道)，3*3卷积核大小，移动步长1像素，边缘填充1像素, 卷积膨胀1像素，分3个组
+            self.conv3 = nn.Conv2d(18, 1 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1), 1, 3)
+
+            # 最后通过亚像素卷积操作
+            self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
         torch.set_printoptions(profile="full")
         torch.set_printoptions(precision=6)  # 显示浮点数的精度到小数点后6位
@@ -125,27 +142,33 @@ class OptimzedNet(nn.Module):
     #############################
     def forward(self, x):
         # 第一层 (5*5的卷积 + tanh激活)
-        print('Convoluting 1 ......\n')
+#        print('Convoluting 1 ......\n')
         x = self.conv1(x)
         x = F.tanh(x)
         folder_path1 = 'd:/sr/PyTorch/conv1/torch_conv1_'
 #        self.print_conv_out(x, folder_path1)
 
         # 将第一层输出进行 channel shuffle
-        x = self.channel_shuffle(x, 6)
+        if (self.scale_factor_ == 4):
+            x = self.channel_shuffle(x, 5)
+        else:
+            x = self.channel_shuffle(x, 6)
 
         # 第二层 (3*3的卷积 + tanh激活)
-        print('Convoluting 2 ......\n')
+#        print('Convoluting 2 ......\n')
         x = self.conv2(x)
         x = F.tanh(x)
         folder_path2 = 'd:/sr/PyTorch/conv2/torch_conv2_'
 #        self.print_conv_out(x, folder_path2)
 
         # 将第二层输出进行 channel shuffle
-        x = self.channel_shuffle(x, 3)
+        if (self.scale_factor_ == 4):
+            x = self.channel_shuffle(x, 4)
+        else:
+            x = self.channel_shuffle(x, 3)
 
         # 第三层 (3*3的卷积 + Sigmod激活)
-        print('Convoluting 3 ......\n')
+#        print('Convoluting 3 ......\n')
         x = self.conv3(x)
         x = F.sigmoid(x)
         folder_path3 = 'd:/sr/PyTorch/conv3/torch_conv3_'

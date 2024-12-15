@@ -11,8 +11,8 @@ from optimized_model import OptimzedNet
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
-    parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
-    parser.add_argument('--model_name', default='epoch_3_100.pt', type=str, help='super resolution model name')
+    parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
+    parser.add_argument('--model_name', default='epoch_4_100.pt', type=str, help='super resolution model name')
     opt = parser.parse_args()
 
     UPSCALE_FACTOR = opt.upscale_factor
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     if torch.cuda.is_available():
         image = image.cuda()
 
-   # model.outdata()
+    model.outdata()
     print('upsample begin...')
     out = model(image)
     out = out.cpu()
@@ -54,5 +54,5 @@ if __name__ == "__main__":
     out_img_cb = cb.resize(out_img_y.size, Image.BICUBIC)
     out_img_cr = cr.resize(out_img_y.size, Image.BICUBIC)
     out_img = Image.merge('YCbCr', [out_img_y, out_img_cb, out_img_cr]).convert('RGB')
-    out_img.save(out_path + 'target_3x.bmp')
+    out_img.save(out_path + 'target_4x.bmp')
     print('upsample done!')

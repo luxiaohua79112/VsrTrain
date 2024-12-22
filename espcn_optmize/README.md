@@ -4,17 +4,20 @@ A PyTorch implementation of ESPCN based on CVPR 2016 paper
 
 ## 训练步骤
 1. 激活相应的运行环境
-进入到相应的环境目录下，在 C:\Users\admin\.conda\envs\pytorchdev 
-执行命令：conda activate pytorchdev
-执行完成后，会变成：(base) C:\Users\LXH>conda activate pytorchdev  这样的命令行
+进入到相应的环境目录下，在 cd C:\Users\admin\.conda\envs\torch_env 
+执行命令：conda activate torch_env
+执行完成后，会变成：(torch_env) C:\Users\admin\.conda\envs\torch_env>  这样的命令行
 
-2. 启动visdom服务器，启动后可以在浏览器中访问 http://localhost:8097 这个链接，可以打开一个页面表示成功
-python -m visdom.server
+2. 安装visdom的时候需要修改一个.py文件，否则一直处于下载中
+打开\Anaconda3\Lib\site-packages\visdom\server.py文件
+找到 download_scripts_and_run()函数，将 download_scripts()语句注释掉  
 
-3. PyCharm工具运行
-直接运行 espcn_train 或者 train 即可开始训练
+3. 启动visdom服务器，启动后可以在浏览器中访问 http://localhost:8097 这个链接，可以打开一个页面表示成功
+python -m visdom.server 
 
-4. 转换成ONNX格式
+4. PyCharm工具运行 直接运行 espcn_train 或者 train 即可开始训练
+
+5. 转换成ONNX格式
 直接运行 pth2onnx 进行转换
 
 ## ONNX格式转换成NCNN支持的格式
